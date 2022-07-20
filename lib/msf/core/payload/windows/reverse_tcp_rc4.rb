@@ -21,7 +21,8 @@ module Payload::Windows::ReverseTcpRc4
 
       ret += line
       ret += "\n"
-      if not line.match(/^\s*;.*/)
+      if not line.match(/^\s*;.*/) \
+        and not line.match(/^call.*/)
         ret += "push eax\n"
         ret += "pop eax\n"
         ret += "\n"
