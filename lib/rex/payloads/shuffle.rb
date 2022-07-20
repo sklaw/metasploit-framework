@@ -37,7 +37,7 @@ module Rex
             source_lines << labeler.call(block[:node].attributes['address']) + ':'
             labeled << block[:node].attributes['address']
             # by default use the raw binary instruction to avoid syntax compatibility issues with metasm
-            instructions = block[:instructions].map { |node| 'db ' + node.attributes['instruction.hex'].strip.chars.each_slice(2).map { |hex| '0x' + hex.join }.join(', ') }
+            instructions = block[:instructions].map { |node| 'db ' + node.attributes['instruction.hex'].strip.chars.each_slice(2).map { |hex| '0x' + hex.join }.join(', ') + ';' + node.attributes['instruction.source'] }
           else
             instructions = block[:instructions].map { |node| node.attributes['instruction.source'] }
           end

