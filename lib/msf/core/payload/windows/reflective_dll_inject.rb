@@ -40,8 +40,8 @@ module Payload::Windows::ReflectiveDllInject
   def asm_invoke_dll(opts={})
     asm = %Q^
         ; prologue
-          dec ebp               ; 'M'
           pop edx               ; 'Z'
+          dec ebp               ; 'M'
           call $+5              ; call next instruction
           pop ebx               ; get the current location (+7 bytes)
           push edx              ; restore edx

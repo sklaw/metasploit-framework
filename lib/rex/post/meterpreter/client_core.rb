@@ -258,6 +258,11 @@ class ClientCore < Extension
       end
 
       if library_image
+
+        if library_image[..1] == "MZ"
+          library_image[..1] = "ZM"
+        end
+
         request.add_tlv(TLV_TYPE_DATA, library_image, false, client.capabilities[:zlib])
       else
         raise RuntimeError, "Failed to serialize library #{library_path}.", caller
@@ -359,7 +364,7 @@ class ClientCore < Extension
         # the file is expected to be
         modname = "ext_server_#{mod.downcase}"
         path = MetasploitPayloads.meterpreter_path(modname, suffix)
-
+        print("extension DLL path: #{path}")
         if opts['ExtensionPath']
           path = ::File.expand_path(opts['ExtensionPath'])
         end
