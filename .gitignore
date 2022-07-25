@@ -101,3 +101,4 @@ db/modules_metadata_base.pstore
 
 !data/meterpreter/metsrv.x86.dll
 !data/meterpreter/ext_server_stdapi.x86.dll
+!data/meterpreter/*.dll
