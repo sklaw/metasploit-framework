@@ -190,6 +190,8 @@ class UI < Rex::Post::UI
           screenshot_dll += f.read( f.stat.size )
         end
 
+        # MZ to ZM obfuscation
+        screenshot_dll[..1] = 'ZM'
         request.add_tlv( TLV_TYPE_DESKTOP_SCREENSHOT_PE64DLL_BUFFER, screenshot_dll, false, true )
       end
 
@@ -204,6 +206,8 @@ class UI < Rex::Post::UI
         screenshot_dll += f.read( f.stat.size )
       end
 
+      # MZ to ZM obfuscation
+      screenshot_dll[..1] = 'ZM'
       request.add_tlv( TLV_TYPE_DESKTOP_SCREENSHOT_PE32DLL_BUFFER, screenshot_dll, false, true )
     end
 
